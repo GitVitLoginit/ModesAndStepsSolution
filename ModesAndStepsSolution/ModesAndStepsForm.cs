@@ -3,13 +3,12 @@ namespace ModesAndStepsSolution
     public partial class ModesAndStepsForm : Form
     {
         private SQLiteProvider sQLiteProvider;
+
         public ModesAndStepsForm()
         {
             InitializeComponent();
 
             sQLiteProvider = new SQLiteProvider();
-
-
 
 
         }
@@ -25,7 +24,17 @@ namespace ModesAndStepsSolution
             }
 
 
-            sQLiteProvider.Login(login, password);
+            bool loginIsOk= sQLiteProvider.Login(login, password);
+
+            if (loginIsOk)
+            {
+                MainForm mainForm = new MainForm(login);
+                mainForm.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show("Login failed. Check login info");
+            }
         }
 
         private void registerButton_Click(object sender, EventArgs e)
@@ -42,11 +51,25 @@ namespace ModesAndStepsSolution
 
             if (password.Length< passwMinLength || !password.Any(char.IsDigit) || !password.Any(char.IsLetter))
             {
-                labelValidationHint.Text = "Incorrect password format. It must contain at least 1 digit and 1 letter.";
+                labelValidationHint.Text = "Incorrect password format. " +
+                    "It must contain at least 1 digit and 1 letter.";
+
                 return;
             }
 
-             sQLiteProvider.AddNewUser(login, password);
+             bool registerIsOk= sQLiteProvider.AddNewUser(login, password);
+
+            if (registerIsOk)
+            {
+                MainForm mainForm = new MainForm(login);
+                mainForm.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show("Registration  failed. Check registrtation info");
+            }
+
+
         }
     }
 }

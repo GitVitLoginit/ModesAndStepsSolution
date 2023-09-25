@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ModesAndStepsSolution.Models;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
@@ -59,22 +60,22 @@ namespace ModesAndStepsSolution
             string query = @"CREATE TABLE Modes
                (ID INTEGER PRIMARY KEY ASC AUTOINCREMENT, Name TEXT, MaxBottleNumber INTEGER, MaxUsedTips INTEGER)";
 
-            RunQuery(query);
+            RunQuery(query, new List<SqlCommandParameter>());
 
             query= @"CREATE TABLE Steps
                (ID INTEGER PRIMARY KEY ASC AUTOINCREMENT, ModeId REFERENCES Modes(ID)  ON DELETE CASCADE ON UPDATE CASCADE , Timer TEXT, Destination TEXT, Speed TEXT, Type TEXT, Volume TEXT)";
 
-            RunQuery(query);
+            RunQuery(query, new List<SqlCommandParameter>());
 
             query = @"CREATE TABLE User
                (ID INTEGER PRIMARY KEY ASC AUTOINCREMENT,  Login TEXT UNIQUE, Password TEXT)";
 
-            RunQuery(query);
+            RunQuery(query, new List<SqlCommandParameter>());
 
 
         }
 
-        public DataTable? ReadQuery(string query)
+        public DataTable? ReadQuery(string query, List<SqlCommandParameter> parameters)
         {
             SQLiteDataAdapter ad;
             DataTable? dt = new DataTable();
@@ -83,7 +84,14 @@ namespace ModesAndStepsSolution
             {
                 SQLiteCommand cmd;
                 cmd = sqliteConnection.CreateCommand();
-                cmd.CommandText = query;  
+                cmd.CommandText = query;
+ 
+                //prevent from injection
+                foreach (var par in parameters)
+                {
+                    cmd.Parameters.AddWithValue(par.ParameterName, par.Value);
+                }
+
                 ad = new SQLiteDataAdapter(cmd);
                 ad.Fill(dt); 
             }
@@ -96,7 +104,7 @@ namespace ModesAndStepsSolution
         }
 
 
-        public void RunQuery(string query)
+        public void RunQuery(string query, List<SqlCommandParameter> parameters)
         {
 
             SQLiteCommand sqlite_cmd;
@@ -105,6 +113,11 @@ namespace ModesAndStepsSolution
             {
                 sqlite_cmd = sqliteConnection.CreateCommand();
                 sqlite_cmd.CommandText = query;
+                //prevent from injection
+                foreach (var par in parameters)
+                {
+                    sqlite_cmd.Parameters.AddWithValue(par.ParameterName, par.Value);
+                }
                 sqlite_cmd.ExecuteNonQuery();
             }
             catch(Exception ex)
@@ -120,10 +133,19 @@ namespace ModesAndStepsSolution
         {
             try
             {
-                var query = @"INSERT INTO User
-                    (Login, Password) VALUES('" + login + @"', '" + HashPassword(passw) + @"');";
+                //var query = @"INSERT INTO User
+                //    (Login, Password) VALUES('" + login + @"', '" + HashPassword(passw) + @"');";
 
-                RunQuery(query);
+                var query = @"INSERT INTO User
+                    (Login, Password) VALUES(@login,@password);";
+
+                var parameters= new List<SqlCommandParameter>()
+                {
+                      new SqlCommandParameter("@login", login),
+                      new SqlCommandParameter("@password", HashPassword(passw))
+                };
+
+                RunQuery(query, parameters);
             }
             catch
             {
@@ -139,9 +161,14 @@ namespace ModesAndStepsSolution
             try
             {
 
-                var query = @"SELECT * FROM User WHERE Login='"+ login+ @"' AND Password='"+HashPassword(passw)+@"';";
+                //var query = @"SELECT * FROM User WHERE Login='"+ login+ @"' AND Password='"+HashPassword(passw)+@"';";
+                var query = @"SELECT * FROM User WHERE Login=@login AND Password=@password;";
 
-                findedUserData= ReadQuery(query);
+                findedUserData = ReadQuery(query, new List<SqlCommandParameter>()
+                {
+                      new SqlCommandParameter("@login", login),
+                      new SqlCommandParameter("@password", HashPassword(passw))
+                });
             }
             catch
             {

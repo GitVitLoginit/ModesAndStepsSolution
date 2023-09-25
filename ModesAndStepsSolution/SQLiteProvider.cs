@@ -18,6 +18,7 @@ namespace ModesAndStepsSolution
         public SQLiteProvider() 
         {
             bool dbExisted = true;
+
             if (!File.Exists(dbFileName))
             {
                 dbExisted = false;
@@ -65,6 +66,12 @@ namespace ModesAndStepsSolution
 
             RunQuery(query);
 
+            query = @"CREATE TABLE User
+               (ID INTEGER PRIMARY KEY ASC AUTOINCREMENT,  Login TEXT UNIQUE, Password TEXT)";
+
+            RunQuery(query);
+
+
         }
 
         public DataTable? ReadQuery(string query)
@@ -106,6 +113,53 @@ namespace ModesAndStepsSolution
             }
        
 
+        }
+
+
+        public bool AddNewUser(string login, string passw)
+        {
+            try
+            {
+                var query = @"INSERT INTO User
+                    (Login, Password) VALUES('" + login + @"', '" + HashPassword(passw) + @"');";
+
+                RunQuery(query);
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+    
+        }
+
+        public bool Login(string login, string passw)
+        {
+            DataTable? findedUserData;
+            try
+            {
+
+                var query = @"SELECT * FROM User WHERE Login='"+ login+ @"' AND Password='"+HashPassword(passw)+@"';";
+
+                findedUserData= ReadQuery(query);
+            }
+            catch
+            {
+                return false;
+            }
+
+            if (findedUserData?.Rows.Count!= 0)
+               return true;
+            else
+               return false;
+
+        }
+
+        private string HashPassword(string passw)
+        {
+            byte[] data = Encoding.ASCII.GetBytes(passw);
+            data = new System.Security.Cryptography.SHA256Managed().ComputeHash(data);
+            return Encoding.ASCII.GetString(data);
         }
 
 

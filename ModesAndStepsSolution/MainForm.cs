@@ -4,11 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+
 
 namespace ModesAndStepsSolution
 {
@@ -49,10 +45,10 @@ namespace ModesAndStepsSolution
         private void LoadModesFromDb()
         {
             var modes = _sQLiteProvider.ReadQuery(@"SELECT * FROM Modes", new List<Models.SqlCommandParameter>());
-
+            _modes = new List<Mode>();
             if (modes?.Rows == null || modes.Rows.Count == 0) { return; }
 
-            _modes = new List<Mode>();
+ 
             foreach (DataRow row in modes.Rows)
             {
                 _modes.Add(new Mode
@@ -70,10 +66,10 @@ namespace ModesAndStepsSolution
         private void LoadStepsFromDb()
         {
             var steps = _sQLiteProvider.ReadQuery(@"SELECT * FROM Steps", new List<Models.SqlCommandParameter>());
-
+            _steps = new List<Step>();
             if (steps?.Rows == null || steps.Rows.Count == 0) { return; }
 
-            _steps = new List<Step>();
+ 
             foreach (DataRow row in steps.Rows)
             {
                 _steps.Add(new Step
@@ -141,14 +137,14 @@ namespace ModesAndStepsSolution
 
         private void dataGridForModes_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            var changedMode = dataGridForModes.Rows[e.ColumnIndex].DataBoundItem as Mode;
+            var changedMode = dataGridForModes.Rows[e.RowIndex].DataBoundItem as Mode;
 
             changedMode.IsModified = true;
         }
 
         private void dataGridForSteps_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            var changedStep = dataGridForSteps.Rows[e.ColumnIndex].DataBoundItem as Step;
+            var changedStep = dataGridForSteps.Rows[e.RowIndex].DataBoundItem as Step;
 
             changedStep.IsModified = true;
         }
@@ -174,35 +170,85 @@ namespace ModesAndStepsSolution
 
         private void button2_Click(object sender, EventArgs e)
         {
-            for (var i=0; i < _modes.Count; i++)
+            string result = "Successfull saves:";
+            bool isSuccessfull;
+            if (_modes != null)
             {
-                var mode = _modes[i];
-
-                if (!mode.IsDeleted && !mode.IsNew && !mode.IsModified)
-                    continue;
-
-                if (mode.IsDeleted && mode.IsNew)
+                for (var i = 0; i < _modes.Count; i++)
                 {
-                    continue;
+                    var mode = _modes[i];
+                    
+                    if (!mode.IsDeleted && !mode.IsNew && !mode.IsModified)
+                        continue;
+
+                    if (mode.IsDeleted && mode.IsNew)
+                    {
+                        continue;
+                    }
+
+                    if (mode.IsDeleted && !mode.IsNew)
+                    {
+                        isSuccessfull =_sQLiteProvider.DeleteMode(mode.Id);
+                        if (isSuccessfull) { result += "\r Deleted mode:" + mode.Id; }
+                        continue;
+                    }
+
+                    if (mode.IsNew)
+                    {
+                        isSuccessfull = _sQLiteProvider.AddMode(mode);
+                        if (isSuccessfull) { result += "\r Added mode:" + mode.Name; }
+                        continue;
+                    }
+                    if (mode.IsModified)
+                    {
+                        isSuccessfull = _sQLiteProvider.UpdateMode(mode);
+                        if (isSuccessfull) { result += "\r Updated mode:" + mode.Id; }
+                        continue;
+                    }
                 }
 
-                if (mode.IsDeleted && !mode.IsNew)
-                {
-                    _sQLiteProvider.DeleteMode(mode.Id);
-                    continue;
-                }
+            }
 
-                if (mode.IsNew)
+            if (_steps != null)
+            {
+                for (var i = 0; i < _steps.Count; i++)
                 {
-                    _sQLiteProvider.AddMode(mode);
-                    continue;
-                }
-                if (mode.IsModified)
-                {
-                    _sQLiteProvider.UpdateMode(mode);
-                    continue;
+                    var step = _steps[i];
+
+                    if (!step.IsDeleted && !step.IsNew && !step.IsModified)
+                        continue;
+
+                    if (step.IsDeleted && step.IsNew)
+                    {
+                        continue;
+                    }
+
+                    if (step.IsDeleted && !step.IsNew)
+                    {
+                        isSuccessfull = _sQLiteProvider.DeleteStep(step.Id);
+                        if (isSuccessfull) { result += "\r Deleted step:" + step.Id; }
+                        continue;
+                    }
+
+                    if (step.IsNew)
+                    {
+                        isSuccessfull = _sQLiteProvider.AddStep(step);
+                        if (isSuccessfull) { result += "\r Added step:" + step.Type; }
+                        continue;
+                    }
+                    if (step.IsModified)
+                    {
+                        isSuccessfull = _sQLiteProvider.UpdateStep(step);
+                        if (isSuccessfull) { result += "\r Updated step:" + step.Id; }
+                        continue;
+                    }
                 }
             }
+
+            MessageBox.Show(result);
+
+            this.Close();
+
         }
     }
 }

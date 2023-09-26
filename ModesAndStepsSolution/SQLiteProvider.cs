@@ -56,6 +56,19 @@ namespace ModesAndStepsSolution
 
         }
 
+        public void Dispose()
+        {
+            sqliteConnection.Close();
+
+            GC.SuppressFinalize(this);
+        }
+
+        ~SQLiteProvider()
+        {
+
+            sqliteConnection.Close();
+        }
+
         private void FirstTablesInitialization()
         {
             string query = @"CREATE TABLE Modes
@@ -201,6 +214,24 @@ namespace ModesAndStepsSolution
   
         }
 
+        public bool DeleteStep(int stepId)
+        {
+            try
+            {
+                RunQuery(@"DELETE FROM Steps WHERE ID = @stepId;", new List<SqlCommandParameter>()
+            {
+                new SqlCommandParameter()
+                {
+                    ParameterName = "@stepId",
+                    Value= stepId
+                }
+            });
+            }
+            catch { return false; }
+            return true;
+
+        }
+
         public bool AddMode(Mode mode)
         {
             try
@@ -222,6 +253,54 @@ namespace ModesAndStepsSolution
                 {
                     ParameterName = "@maxUsedTips",
                     Value= mode.MaxUsedTips
+                }
+            });
+            }
+            catch { return false; }
+            return true;
+
+        }
+
+        public bool AddStep(Step step)
+        {
+            try
+            {
+                //Timer TEXT, Destination TEXT, Speed TEXT, Type TEXT, Volume TEXT
+                RunQuery(@"INSERT INTO Steps
+                        (ModeId, Timer, Destination, Speed, Type, Volume) VALUES(@modeId, @timer, @destination, @speed, @type, @volume); ", new List<SqlCommandParameter>()
+            {
+                new SqlCommandParameter()
+                {
+                    ParameterName = "@modeId",
+                    Value= step.ModeId
+                },
+                 new SqlCommandParameter()
+                {
+                    ParameterName = "@timer",
+                    Value= step.Timer
+                },
+                  new SqlCommandParameter()
+                {
+                    ParameterName = "@destination",
+                    Value= step.Destination
+                }
+                  ,
+                new SqlCommandParameter()
+                {
+                    ParameterName = "@speed",
+                    Value= step.Speed
+                }
+                  ,
+                new SqlCommandParameter()
+                {
+                    ParameterName = "@type",
+                    Value= step.Type
+                }
+                  ,
+                new SqlCommandParameter()
+                {
+                    ParameterName = "@volume",
+                    Value= step.Volume
                 }
             });
             }
@@ -263,6 +342,58 @@ namespace ModesAndStepsSolution
 
         }
 
+
+        public bool UpdateStep(Step step)
+        {
+            try
+            {
+                RunQuery(@"UPDATE Steps set ModeId=@modeId, Timer=@timer, Destination=@destination, Speed=@speed, Type=@type, Volume=@volume  WHERE ID=@id;", new List<SqlCommandParameter>()
+            {
+                 new SqlCommandParameter()
+                {
+                    ParameterName = "@modeId",
+                    Value= step.ModeId
+                },
+                 new SqlCommandParameter()
+                {
+                    ParameterName = "@timer",
+                    Value= step.Timer
+                },
+                  new SqlCommandParameter()
+                {
+                    ParameterName = "@destination",
+                    Value= step.Destination
+                }
+                  ,
+                new SqlCommandParameter()
+                {
+                    ParameterName = "@speed",
+                    Value= step.Speed
+                }
+                 ,
+                new SqlCommandParameter()
+                {
+                    ParameterName = "@type",
+                    Value= step.Type
+                }
+                ,
+                new SqlCommandParameter()
+                {
+                    ParameterName = "@volume",
+                    Value= step.Volume
+                },  new SqlCommandParameter()
+                {
+                    ParameterName = "@id",
+                    Value= step.Id
+                }
+            });
+            }
+            catch { return false; }
+            return true;
+
+        }
+
+
         private string HashPassword(string passw)
         {
             byte[] data = Encoding.ASCII.GetBytes(passw);
@@ -270,10 +401,5 @@ namespace ModesAndStepsSolution
             return Encoding.ASCII.GetString(data);
         }
 
-
-        public void Dispose()
-        {
-            sqliteConnection.Close();
-        }
     }
 }

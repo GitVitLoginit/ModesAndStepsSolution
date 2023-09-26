@@ -111,6 +111,7 @@
             Controls.Add(registerButton);
             Controls.Add(loginButton);
             Name = "ModesAndStepsForm";
+            FormClosed += ModesAndStepsForm_FormClosed;
             ResumeLayout(false);
             PerformLayout();
         }

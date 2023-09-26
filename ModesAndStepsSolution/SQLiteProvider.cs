@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ModesAndStepsSolution
 {
-    internal class SQLiteProvider : IDisposable
+    public class SQLiteProvider : IDisposable
     {
     
         private SQLiteConnection sqliteConnection;
@@ -37,20 +37,21 @@ namespace ModesAndStepsSolution
                 FirstTablesInitialization();
             }
 
-/*
-            RunQuery(@"INSERT INTO Modes
-            (Name, MaxBottleNumber, MaxUsedTips) VALUES('Third Mode', 2332, 1324238); ");
+            /*
+                        RunQuery(@"INSERT INTO Modes
+                        (Name, MaxBottleNumber, MaxUsedTips) VALUES('Third Mode', 2332, 1324238); ");
 
 
-            RunQuery(@"INSERT INTO Steps
-            (ModeId, Timer, Destination,Speed,Type,Volume) VALUES(1, 'some time1', 'some destination1', 'some speed1', 'some type1', 'some volume1'); ");
+                        RunQuery(@"INSERT INTO Steps
+                        (ModeId, Timer, Destination,Speed,Type,Volume) VALUES(1, 'some time1', 'some destination1', 'some speed1', 'some type1', 'some volume1'); ");
 
-            RunQuery(@"INSERT INTO Steps
-            (ModeId, Timer, Destination,Speed,Type,Volume) VALUES(5, 'some time1', 'some destination1', 'some speed1', 'some type1', 'some volume1'); ");
+                        RunQuery(@"INSERT INTO Steps
+                        (ModeId, Timer, Destination,Speed,Type,Volume) VALUES(5, 'some time1', 'some destination1', 'some speed1', 'some type1', 'some volume1'); ");
 
-           
-            ReadQuery(@"SELECT * FROM Steps");
-            */
+                       */
+
+          //  ReadQuery(@"SELECT * FROM Modes", new List<SqlCommandParameter>());
+            
 
 
         }
@@ -179,6 +180,86 @@ namespace ModesAndStepsSolution
                return true;
             else
                return false;
+
+        }
+
+        public bool DeleteMode(int modeId)
+        {
+            try
+            {
+                RunQuery(@"DELETE FROM Modes WHERE ID = @modeId;", new List<SqlCommandParameter>()
+            {
+                new SqlCommandParameter()
+                {
+                    ParameterName = "@modeId",
+                    Value= modeId
+                }
+            });
+            }
+            catch { return false; }
+            return true;
+  
+        }
+
+        public bool AddMode(Mode mode)
+        {
+            try
+            {
+                RunQuery(@"INSERT INTO Modes
+                        (Name, MaxBottleNumber, MaxUsedTips) VALUES(@name, @maxBottleNumber, @maxUsedTips); ", new List<SqlCommandParameter>()
+            {
+                new SqlCommandParameter()
+                {
+                    ParameterName = "@name",
+                    Value= mode.Name
+                },
+                 new SqlCommandParameter()
+                {
+                    ParameterName = "@maxBottleNumber",
+                    Value= mode.MaxBottleNumber
+                },
+                  new SqlCommandParameter()
+                {
+                    ParameterName = "@maxUsedTips",
+                    Value= mode.MaxUsedTips
+                }
+            });
+            }
+            catch { return false; }
+            return true;
+
+        }
+
+        public bool UpdateMode(Mode mode)
+        {
+            try
+            {
+                RunQuery(@"UPDATE Modes set Name=@name, MaxBottleNumber=@maxBottleNumber, MaxUsedTips=@maxUsedTips  WHERE ID=@id;", new List<SqlCommandParameter>()
+            {
+                new SqlCommandParameter()
+                {
+                    ParameterName = "@name",
+                    Value= mode.Name
+                },
+                 new SqlCommandParameter()
+                {
+                    ParameterName = "@maxBottleNumber",
+                    Value= mode.MaxBottleNumber
+                },
+                  new SqlCommandParameter()
+                {
+                    ParameterName = "@maxUsedTips",
+                    Value= mode.MaxUsedTips
+                },
+                new SqlCommandParameter()
+                {
+                    ParameterName = "@id",
+                    Value= mode.Id
+                }
+            });
+            }
+            catch { return false; }
+            return true;
 
         }
 

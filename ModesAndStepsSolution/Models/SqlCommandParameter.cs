@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ModesAndStepsSolution.Models
 {
-    internal struct SqlCommandParameter
+    public struct SqlCommandParameter
     {
         public  SqlCommandParameter(string parameterName, string value)
         {

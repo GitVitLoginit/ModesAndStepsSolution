@@ -9,8 +9,6 @@ namespace ModesAndStepsSolution
             InitializeComponent();
 
             sQLiteProvider = new SQLiteProvider();
-
-
         }
 
         private void loginButton_Click(object sender, EventArgs e)
@@ -24,11 +22,11 @@ namespace ModesAndStepsSolution
             }
 
 
-            bool loginIsOk= sQLiteProvider.Login(login, password);
+            bool loginIsOk = sQLiteProvider.Login(login, password);
 
             if (loginIsOk)
             {
-                MainForm mainForm = new MainForm(login);
+                MainForm mainForm = new MainForm(login, sQLiteProvider);
                 mainForm.ShowDialog();
             }
             else
@@ -49,19 +47,19 @@ namespace ModesAndStepsSolution
                 return;
             }
 
-            if (password.Length< passwMinLength || !password.Any(char.IsDigit) || !password.Any(char.IsLetter))
+            if (password.Length < passwMinLength || !password.Any(char.IsDigit) || !password.Any(char.IsLetter))
             {
-                labelValidationHint.Text = "Incorrect password format. " +
+                labelValidationHint.Text = "Incorrect password format. " + "\n" +
                     "It must contain at least 1 digit and 1 letter.";
 
                 return;
             }
 
-             bool registerIsOk= sQLiteProvider.AddNewUser(login, password);
+            bool registerIsOk = sQLiteProvider.AddNewUser(login, password);
 
             if (registerIsOk)
             {
-                MainForm mainForm = new MainForm(login);
+                MainForm mainForm = new MainForm(login, sQLiteProvider);
                 mainForm.ShowDialog();
             }
             else
@@ -70,6 +68,11 @@ namespace ModesAndStepsSolution
             }
 
 
+        }
+
+        private void ModesAndStepsForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            sQLiteProvider.Dispose();
         }
     }
 }
